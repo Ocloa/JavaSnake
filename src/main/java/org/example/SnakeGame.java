@@ -1,3 +1,5 @@
+package org.example;
+
 import java.awt.Rectangle;
 
 
@@ -64,7 +66,7 @@ public class SnakeGame implements Runnable {
 
     public void finishGame() {
         started = false;
-
+        GUI.f1.repaint();
         //create blink animation
         for(int i=0; i<4; i++) {
             finishedBlink1 = true;
@@ -76,7 +78,7 @@ public class SnakeGame implements Runnable {
             }
             finishedBlink1 = false;
             finishedBlink2 = true;
-
+            GUI.f1.repaint();
 
             try {
                 Thread.sleep(500);
@@ -91,7 +93,7 @@ public class SnakeGame implements Runnable {
         finishedBlink2 = false;
         finished = true;
         menuSelection = "Restart game";
-
+        GUI.f1.repaint();
 
     }
 
@@ -102,6 +104,8 @@ public class SnakeGame implements Runnable {
         snake = new Snake();
         food = new Food();
         food.setFood(food);
+        Main.gui.setFood(food);
+        Main.gui.setSnake(snake);
 
 
         snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
@@ -145,7 +149,7 @@ public class SnakeGame implements Runnable {
                 }
             }
 
-
+            GUI.f1.repaint();
 
 
             try {
