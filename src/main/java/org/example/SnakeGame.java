@@ -1,250 +1,366 @@
-package org.example;
+import java.awt.Rectangle;
 
-import javax.swing.JPanel;
-import javax.swing.Timer;
-//импортируем классы для рисования и работы с графикой
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-//импортируем классы для обработки событий клавиатуры и таймера
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.font.TextLayout;
-//классы для работы со списками и генератором случайных чисел
-import java.util.HashSet;
-import java.util.Random;
-import java.util.LinkedList;
 
-public class SnakeGame extends JPanel implements ActionListener{
-    private final int width; //ширина игрового поля
-    private final int height;//высота игрвого поля
-    private final int cellSize;//размер клетки игрового поля
-    private final int FRAME_RATE = 20; //частота кадров игры в секунду
-    private boolean gameStarted = false;//флаг, указывающий началась ли игра
-    private boolean gameOver = false;//флаг, указывающий закончилась ли игра
-    private int highScore; //рекорд игры
-    private GamePoint food; //точка в которой находится еда
-    private GamePoint bonus;//точка в которой находится бонус
-    private Direction direction = Direction.RIGHT; //текущее направление движения змейки
-    private Direction newDirection = Direction.RIGHT;//новое направление движения змейки, заданное пользователем
-    private final LinkedList<GamePoint> snake = new LinkedList<>();//список точек из которых состоит змейка
-    private final Random random = new Random();
+public class SnakeGame implements Runnable {
 
-    public SnakeGame(final int width, final int height) {
-        this.width = width;
-        this.height = height;
-        this.cellSize = width / (20 * 2); //вычисляем размер клетки на основе частоты кадров
-        setPreferredSize(new Dimension(width, height)); //устанавливаем размер панели
-        setBackground(Color.black);//цвет фона
-        int currentScore = 0;
-    }
-    //запуск игры
-    public void startGame() {
-        resetGameData();//сброс данных игры
-        setFocusable(true);
-        setFocusTraversalKeysEnabled(false);
-        requestFocusInWindow();
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(final KeyEvent e) {//прослушка клавиатуры
-                handleKeyEvent(e.getKeyCode());//обаботка нажатия клавиш
-            }
-        });//обработка нажатия клавиши
-        new Timer(2000 / FRAME_RATE , this).start();//запуск таймера для обновления игры
-    }
-    //обработка нажатия клавиш для управления змейкой и перезапуска игры
-    private void handleKeyEvent(final int keyCode) {
-        if (!gameStarted) {//проверка старта игры
-            if (keyCode == KeyEvent.VK_SPACE) {//запуск игры принажатии на пробел
-                gameStarted = true;
-            }
-        } else if (!gameOver) {//проверка конца игры
-            switch (keyCode) {
-                case KeyEvent.VK_UP:
-                    if (direction != Direction.DOWN) {
-                        newDirection = Direction.UP;
-                    }
-                    break;
-                case KeyEvent.VK_DOWN:
-                    if (direction != Direction.UP) {
-                        newDirection = Direction.DOWN;
-                    }
-                    break;
-                case KeyEvent.VK_RIGHT:
-                    if (direction != Direction.LEFT) {
-                        newDirection = Direction.RIGHT;
-                    }
-                    break;
-                case KeyEvent.VK_LEFT:
-                    if (direction != Direction.RIGHT) {
-                        newDirection = Direction.LEFT;
-                    }
-                    break;
-            }
-        } else if (keyCode == KeyEvent.VK_SPACE) { //при перезапуске игры
-            gameStarted = false;
-            gameOver = false;
-            resetGameData();
+    private boolean started = false;
+    private boolean finishedBlink1 = false;
+    private boolean finishedBlink2 = false;
+    private boolean finished = false;
+    private int score = 0;
+    private int maxScoreLeft = 0;
+    private int seconds = 0;
+    private int minutes = 0;
+    private boolean pause = false;
+    private boolean restart = false;
+    private boolean startMenu = true;
+    private int difficultyLevel=0;	//0=easy, 1=normal, 2=hard
+    private  int difficultyLevel_thread;
+
+    private String menuSelection = "Start game";
+
+    private Snake snake;
+    private SnakeGame snakeGame;
+    private Food food;
+
+
+    public void startGame(SnakeGame snakeGame) {
+        started = true;
+        Thread t = new Thread(snakeGame);
+        menuSelection = "Restart game";
+
+        switch(snakeGame.getDifficultyLevel()) {
+            case 0:
+                snakeGame.setDifficultyLevel_thread(300);
+                break;
+            case 1:
+                snakeGame.setDifficultyLevel_thread(200);
+                break;
+            case 2:
+                snakeGame.setDifficultyLevel_thread(100);
+                break;
         }
-    }
-    //сброс данных игры
-    private void resetGameData() {
-        snake.clear();
-        snake.add(new GamePoint(width / 2, height / 2));
-        generateFood();
-        generateBonus();
-    }
-    //генерация еды
-    private void generateFood() {
-        do {
-            food = new GamePoint(random.nextInt(width / cellSize) * cellSize,
-                    random.nextInt(height / cellSize) * cellSize);
-        } while (snake.contains(food)); //проверка совпадения с какой-либо точкой змейки
-    }
-    //генерация бонуса
-    private void generateBonus() {
-        if (random.nextDouble() < 0.5) { // Вероятность генерации бонуса 50%
-            do {
-                bonus = new GamePoint(random.nextInt(width / cellSize) * cellSize, random.nextInt(height / cellSize) * cellSize);
-            } while (snake.contains(bonus) || bonus.equals(food));
-        } else {
-            bonus = null;
-        }
-    }
-    //отрисовка компонентов игры
-    @Override
-    protected void paintComponent(final Graphics graphics) {
-        super.paintComponent(graphics);
-        //проверка запуска игры
-        if (!gameStarted) {
-            printMessage(graphics, "Press Space Bar to Begin Game");//вывод сообщения для начала игры
-        } else {
-            int currentScore = snake.size();
-            final String scoreText = "Score: " + currentScore; // текст с текущим счетом
-            graphics.setColor(Color.WHITE); // цвет текста
-            graphics.setFont(graphics.getFont().deriveFont(20F)); // шрифт
-            graphics.drawString(scoreText, 10, 30); // позиция текста на экране
 
-            Color foodColor = Color.green;
-            graphics.setColor(foodColor);
-            graphics.fillRect(food.x, food.y, cellSize, cellSize);
-            if (bonus != null) {
-                Color bonusColor = Color.yellow;
-                graphics.setColor(bonusColor);
-                graphics.fillRect(bonus.x, bonus.y, cellSize, cellSize);
+        t.start();
+    }
+
+    public void restartGame() {
+        snake.setSnakeX(100);
+        snake.setSnakeY(100);
+        snake.setSnakeLeft(false);
+        snake.setSnakeUp(false);
+        snake.setSnakeDown(false);
+        snake.setSnakeRight(true);
+        snakeGame.setFinished(false);
+        snakeGame.setScore(0);
+        snakeGame.setSeconds(0);
+        snakeGame.setMinutes(0);
+        snakeGame.setMaxScoreLeft(100);
+        snakeGame.setPause(false);
+        snake.getList().clear();
+        snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
+    }
+
+
+    public void finishGame() {
+        started = false;
+
+        //create blink animation
+        for(int i=0; i<4; i++) {
+            finishedBlink1 = true;
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            Color snakeColor = Color.magenta;//цвет змейки
-            for (final var point : snake) { //отрисовка змейки
-                graphics.setColor(snakeColor);
-                graphics.fillRect(point.x, point.y, cellSize, cellSize);
-                //градиентная заливка змейки
-                final int newRed = (int) Math.round(snakeColor.getRed() * (0.95));
-                final int newBlue = (int) Math.round(snakeColor.getBlue() * (0.95));
-                snakeColor = new Color(newRed, 0, newBlue);
+            finishedBlink1 = false;
+            finishedBlink2 = true;
+
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            if (gameOver) {
-                final int finalScore = snake.size();//размер змейки для вывода результата
-                if (finalScore > highScore) {//сравнение с рекордом
-                    highScore = finalScore;
+            finishedBlink2 = false;
+        }
+
+        //display "game over" and score
+        finishedBlink1 = false;
+        finishedBlink2 = false;
+        finished = true;
+        menuSelection = "Restart game";
+
+
+    }
+
+
+
+    public void run() {
+
+        snake = new Snake();
+        food = new Food();
+        food.setFood(food);
+
+
+        snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
+
+        long startTime = System.currentTimeMillis();
+        long currentTime = 0;
+
+        //игровой цикл
+        while(snakeGame.started==true) {
+
+            if(snakeGame.isPause()==false) {
+
+                collisionWall();
+                placeFood();
+
+                //обновление счета
+                if(snakeGame.getMaxScoreLeft()>0) {
+                    snakeGame.setMaxScoreLeft(snakeGame.getMaxScoreLeft()-1);
                 }
-                printMessage(graphics, "Your Score: " + finalScore //вывод результата
-                        + "\nHigh Score: " + highScore //вывод рекорда
-                        + "\nPress Space Bar to Reset");//вывод указания для нового старта
+
+                //проверка столкновения с едой
+                collisionFood();
+
+                //проверка столкновения с собой
+                collisionSnake();
+
+                //отрисовка змейки
+                snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
+                snake.getList().remove(0);
+
+                //информация о времени
+                currentTime = System.currentTimeMillis();
+                if(currentTime - startTime >= 901) {
+                    if(snakeGame.getSeconds()<59) {
+                        snakeGame.setSeconds(snakeGame.getSeconds()+1);
+                    }else if(snakeGame.getSeconds()>=59) {
+                        snakeGame.setSeconds(0);
+                        snakeGame.setMinutes(snakeGame.getMinutes()+1);
+                    }
+                    startTime += currentTime - startTime + 100;
+                }
+            }
+
+
+
+
+            try {
+                Thread.sleep(snakeGame.getDifficultyLevel_thread());
+            } catch (InterruptedException e) {
+
+                e.printStackTrace();
+            }
+
+        }
+
+    }
+
+    public void collisionWall() {
+        if(snake.isSnakeUp()==true) {
+            if(snake.getSnakeY()<20) {
+                finishGame();
+            }else{
+                snake.setSnakeY(snake.getSnakeY() - 15);
+            }
+
+        }else if(snake.isSnakeDown()==true) {
+            if(snake.getSnakeY()>335) {
+                finishGame();
+            }else {
+                snake.setSnakeY(snake.getSnakeY() + 15);
+            }
+        }else if(snake.isSnakeLeft()==true) {
+            if(snake.getSnakeX()<20) {
+                finishGame();
+            }else {
+                snake.setSnakeX(snake.getSnakeX() - 15);
+            }
+        }else if(snake.isSnakeRight()==true) {
+            if(snake.getSnakeX()>370) {
+                finishGame();
+            }else {
+                snake.setSnakeX(snake.getSnakeX() + 15);
             }
         }
     }
-    //вывод сообщений
-    private void printMessage(final Graphics graphics, final String message) {
-        graphics.setColor(Color.WHITE); //цвет текста
-        graphics.setFont(graphics.getFont().deriveFont(30F));//шрифт
-        int currentHeight = height / 3;
-        final var graphics2D = (Graphics2D) graphics;
-        final var frc = graphics2D.getFontRenderContext();
-        for (final var line : message.split("\n")) { //проход по каждой строке сообщения
-            final var layout = new TextLayout(line, graphics.getFont(), frc);
-            final var bounds = layout.getBounds();//границы прямоугольника для текста
-            final var targetWidth = (float) (width - bounds.getWidth()) / 2; //расчет горизонтальной координаты для центрирования текста по ширине игрового поля
-            layout.draw(graphics2D, targetWidth, currentHeight); //отрисовка строки текста
-            currentHeight += graphics.getFontMetrics().getHeight(); //добавление высоты для следующей строки
-        }
-    }
-    //перемещение змейки в соответствии с текущим направлением
-    private void move() {
-        direction = newDirection;//обновление направления змейки
 
-        final GamePoint head = snake.getFirst();//получение текущей позиции головы змейки
-        final GamePoint newHead = switch (direction) {//новая голова
-            case UP -> new GamePoint(head.x, head.y - cellSize);
-            case DOWN -> new GamePoint(head.x, head.y + cellSize);
-            case LEFT -> new GamePoint(head.x - cellSize, head.y);
-            case RIGHT -> new GamePoint(head.x + cellSize, head.y);
-        };
-        snake.addFirst(newHead);//добавление новой головы в начало списка
-        if (newHead.equals(food)) {//проверка на столкновение с едой
-            generateFood();//генерация новой еды
-            generateBonus();
-        }
-        else if (newHead.equals(bonus)) {//проверка на столкновение с бонусом
-            int action = random.nextInt(2); //случайное число от 0 до 1 (включительно)
-            switch (action) {
-                case 0: // размер змейки увеличивается на 3
-                    for (int i = 0; i < 3; i++) {
-                        direction = newDirection;
-                        snake.addLast(switch (direction) {
-                            case UP -> new GamePoint(snake.getLast().x, snake.getLast().y + cellSize);
-                            case DOWN -> new GamePoint(snake.getLast().x, snake.getLast().y - cellSize);
-                            case LEFT -> new GamePoint(snake.getLast().x + cellSize, snake.getLast().y);
-                            case RIGHT -> new GamePoint(snake.getLast().x - cellSize, snake.getLast().y);
-                        }); // добавляем три новые точки в конец списка змейки
-                    }
 
-                    break;
-                case 1: // размер змейки уменьшается на 2
-                    if (snake.size() > 2) { // проверка условия, что размер змейки больше двух
-                        for (int i = 0; i < 2; i++) {
-                            snake.removeLast(); // удаляем две последние точки из списка змейки
-                        }
-                    }
-                    break;
+
+    public void collisionSnake() {
+        for(int i=1; i<snake.getList().size()-1; i++) {
+
+            if(i+1<snake.getList().size()) {
+                if(snake.getList().get(0).intersects(snake.getList().get(i+1))) {
+                    finishGame();
+                }
             }
-            bonus = null; // удаление бонуса
-            generateBonus();
-            generateFood();
-        }
-        else if (isCollision()) {//проверка на столкновение с границами или самой собой
-            gameOver = true;//смена флага
-            snake.removeFirst();//удаление головы
-        }
-        else {
-            snake.removeLast();//удаление хвоста
         }
     }
-    //проверка столкновения змейки с границами экрана или самой собой
-    private boolean isCollision() {
-        final GamePoint head = snake.getFirst();
-        final var invalidWidth = (head.x < 0) || (head.x >= width);
-        final var invalidHeight = (head.y < 0) || (head.y >= height);
-        if (invalidWidth || invalidHeight) {
-            return true;
+
+    public void collisionFood() {
+        if(Math.abs(food.getFoodX()-snake.getSnakeX())<=8  &&  Math.abs(food.getFoodY()-snake.getSnakeY())<=8) {
+            food.setFoodPlaced(false);
+
+            snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
+
+            snakeGame.score += snakeGame.getMaxScoreLeft();
         }
-        return snake.size() != new HashSet<>(snake).size();
     }
-    //вызов move для перемещения змеки и перерисовка игрового поля
-    @Override
-    public void actionPerformed(final ActionEvent e) {
-        if (gameStarted && !gameOver) {
-            move();
+
+
+    public void placeFood() {
+        if(food.isFoodPlaced() == false) {
+            food.setFoodX((int) (35+Math.random()*335));
+            food.setFoodY((int) (35+Math.random()*315));
+            food.setFoodPlaced(true);
+            snakeGame.maxScoreLeft = 100;
         }
-        repaint();
     }
-    //запись координат точки на игровом поле
-    private record GamePoint(int x, int y) {
+
+
+
+    public Snake getSnake() {
+        return snake;
     }
-    //для направлений движения змейки
-    private enum Direction {
-        UP, DOWN, RIGHT, LEFT
+
+
+    public void setSnake(Snake snake) {
+        this.snake = snake;
     }
+
+    public boolean isStarted() {
+        return started;
+    }
+
+    public void setStarted(boolean started) {
+        this.started = started;
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void setFinished(boolean finished) {
+        this.finished = finished;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
+
+    public SnakeGame getSnakeGame() {
+        return snakeGame;
+    }
+
+
+    public void setSnakeGame(SnakeGame snakeGame) {
+        this.snakeGame = snakeGame;
+    }
+
+    public boolean isFinishedBlink1() {
+        return finishedBlink1;
+    }
+
+
+    public void setFinishedBlink1(boolean finishedBlink1) {
+        this.finishedBlink1 = finishedBlink1;
+    }
+
+
+    public boolean isFinishedBlink2() {
+        return finishedBlink2;
+    }
+
+
+    public void setFinishedBlink2(boolean finishedBlink2) {
+        this.finishedBlink2 = finishedBlink2;
+    }
+
+
+    public boolean isPause() {
+        return pause;
+    }
+
+
+    public void setPause(boolean pause) {
+        this.pause = pause;
+    }
+
+
+    public boolean isRestart() {
+        return restart;
+    }
+
+
+    public void setRestart(boolean restart) {
+        this.restart = restart;
+    }
+
+
+    public String getMenuSelection() {
+        return menuSelection;
+    }
+
+
+    public void setMenuSelection(String menuSelection) {
+        this.menuSelection = menuSelection;
+    }
+
+    public int getMaxScoreLeft() {
+        return maxScoreLeft;
+    }
+
+    public void setMaxScoreLeft(int maxScoreLeft) {
+        this.maxScoreLeft = maxScoreLeft;
+    }
+
+    public int getSeconds() {
+        return seconds;
+    }
+
+    public void setSeconds(int seconds) {
+        this.seconds = seconds;
+    }
+
+    public int getMinutes() {
+        return minutes;
+    }
+
+    public void setMinutes(int minutes) {
+        this.minutes = minutes;
+    }
+
+
+    public boolean isStartmenu() {
+        return startMenu;
+    }
+
+    public void setStartmenu(boolean startmenu) {
+        this.startMenu = startmenu;
+    }
+
+    public int getDifficultyLevel() {
+        return difficultyLevel;
+    }
+
+    public void setDifficultyLevel(int difficultyLevel) {
+        this.difficultyLevel = difficultyLevel;
+    }
+
+    public int getDifficultyLevel_thread() {
+        return difficultyLevel_thread;
+    }
+
+    public void setDifficultyLevel_thread(int difficultyLevel_thread) {
+        this.difficultyLevel_thread = difficultyLevel_thread;
+    }
+
 }
