@@ -1,0 +1,107 @@
+Index: src/main/java/org/example/GUI.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/GUI.java b/src/main/java/org/example/GUI.java
+new file mode 100644
+--- /dev/null	(date 1710134465429)
++++ b/src/main/java/org/example/GUI.java	(date 1710134465429)
+@@ -0,0 +1,97 @@
++package org.example;
++
++import java.awt.Color;
++import java.awt.Font;
++import java.awt.Graphics;
++import java.awt.Graphics2D;
++import java.awt.event.KeyEvent;
++import java.awt.event.KeyListener;
++
++import javax.swing.JFrame;
++import javax.swing.JPanel;
++import javax.swing.UIManager;
++import javax.swing.UnsupportedLookAndFeelException;
++
++
++
++public class GUI {
++    static JFrame f1;
++    static JPanel p1;
++    private Snake snake;
++    private SnakeGame snakeGame;
++    private Food food;
++    private Font fontMenu;
++    private Font fontHeader;
++
++    public GUI() {
++        snakeGame = new SnakeGame();
++        snakeGame.setSnakeGame(snakeGame);
++    }
++
++    public void createGameWindow() {
++
++        f1 = new JFrame("Snake");
++        f1.setSize(675, 395);
++        f1.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
++
++        try {
++            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
++        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
++                 UnsupportedLookAndFeelException e) {
++            e.printStackTrace();
++        }
++    }
++    f1.setLocationRelativeTo(null);
++    p1 = new Draw();
++		p1.setLayout(null);
++		f1.add(p1);
++
++    //Create Fonts
++    fontMenu = new Font( Font.SANS_SERIF, Font.PLAIN, 12 );
++    fontHeader = new Font( Font.SANS_SERIF, Font.BOLD, 16 );
++
++    f1.requestFocus();
++    f1.repaint();
++    f1.setVisible(true);
++    f1.addKeyListener(new KeyListener() {
++
++        @Override
++        public void keyTyped(KeyEvent e) {
++
++        }
++        @Override
++        public void keyPressed(KeyEvent e) {
++            if(snakeGame.isStarted()==true) {
++
++                //Pause Menu
++                if(snakeGame.isPause()==true){
++
++                    checkPauseMenuInputs(e);
++
++                    //Current Game
++                }else if(snakeGame.isPause()==false) {
++
++                    checkCurrentGameInputs(e);
++
++                }
++                //Game Over Menu
++            }else if(snakeGame.isFinished()==true) {
++
++                checkGameOverInputs(e);
++
++                //Start Menu
++            }else if(snakeGame.isStartmenu()==true) {
++
++                checkStartMenuInputs(e);
++
++            }
++        }
++        @Override
++        public void keyReleased(KeyEvent e) {
++
++        }
++
++    });
++
++}
++}
