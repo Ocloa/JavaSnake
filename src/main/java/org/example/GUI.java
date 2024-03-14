@@ -250,31 +250,21 @@ public class GUI {
     public void checkStartMenuInputs(KeyEvent e) {
         //Up
         if(e.getKeyCode()==38) {
-            if(snakeGame.getMenuSelection().equals("Exit game")) {
-                snakeGame.setMenuSelection("Difficulty");
+            if(snakeGame.getMenuSelection().equals("Start game")) {
+                snakeGame.setMenuSelection("Exit game");
                 GUI.f1.repaint();
-            }else if(snakeGame.getMenuSelection().equals("Difficulty")) {
+            }else if(snakeGame.getMenuSelection().equals("Exit game")) {
                 snakeGame.setMenuSelection("Start game");
                 GUI.f1.repaint();
             }
-            //Down
-        }else if(e.getKeyCode()==40) {
+        }
+        //Down
+        if(e.getKeyCode()==40) {
             if(snakeGame.getMenuSelection().equals("Start game")) {
-                snakeGame.setMenuSelection("Difficulty");
-                GUI.f1.repaint();
-            }else if(snakeGame.getMenuSelection().equals("Difficulty")) {
                 snakeGame.setMenuSelection("Exit game");
                 GUI.f1.repaint();
-            }
-            //Выбор сложности
-        }else if(e.getKeyCode()==39) {
-            if(snakeGame.getMenuSelection().equals("Difficulty") && snakeGame.getDifficultyLevel()!=2) {
-                snakeGame.setDifficultyLevel(snakeGame.getDifficultyLevel()+1);
-                GUI.f1.repaint();
-            }
-        }else if(e.getKeyCode()==37) {
-            if(snakeGame.getMenuSelection().equals("Difficulty") && snakeGame.getDifficultyLevel()!=0) {
-                snakeGame.setDifficultyLevel(snakeGame.getDifficultyLevel()-1);
+            }else if(snakeGame.getMenuSelection().equals("Exit game")) {
+                snakeGame.setMenuSelection("Start game");
                 GUI.f1.repaint();
             }
         }
@@ -343,7 +333,7 @@ public class GUI {
 
 
 
-        // Информация об игре
+        //нформация об игре
 
 
         g2.setColor(Color.BLACK);
@@ -434,9 +424,6 @@ public class GUI {
             case "Exit game":
                 g2.fillOval(70, 240, 10, 10);
                 break;
-            case "Difficulty":
-                g2.fillOval(70, 290, 10, 10);
-                break;
         }
     }
 
@@ -448,11 +435,7 @@ public class GUI {
         g2.drawString("Snake", 100, 100);
         g2.setFont(fontMenu);
         g2.drawString("Start game", 100, 200);
-        g2.drawString("Difficulty:", 100, 250);
-        g2.drawString("Exit game", 100, 300);
-        g2.drawString("Easy", 205, 250);
-        g2.drawString("Normal", 255, 250);
-        g2.drawString("Hard", 305, 250);
+        g2.drawString("Exit game", 100, 250);
 
 
         switch (snakeGame.getMenuSelection()) {
@@ -460,26 +443,9 @@ public class GUI {
             case "Start game":
                 g2.fillOval(70, 190, 10, 10);
                 break;
-            case "Difficulty":
+            case "Exit game":
                 g2.fillOval(70, 240, 10, 10);
                 break;
-            case "Exit game":
-                g2.fillOval(70, 290, 10, 10);
-                break;
-        }
-
-
-        switch(snakeGame.getDifficultyLevel()) {
-            case 0:
-                g2.drawRect(202, 239, 31, 14);
-                break;
-            case 1:
-                g2.drawRect(252, 239, 45, 14);
-                break;
-            case 2:
-                g2.drawRect(302, 239, 32, 14);
-                break;
-
         }
     }
 
