@@ -9,6 +9,7 @@ public class SnakeGame implements Runnable {
     private boolean finishedBlink1 = false;
     private boolean finishedBlink2 = false;
     private boolean finished = false;
+    private boolean bonusFlag = false;
     private int score = 0;
     private int maxScoreLeft = 0;
     private int seconds = 0;
@@ -111,7 +112,6 @@ public class SnakeGame implements Runnable {
 
                 collisionWall();
                 placeFood();
-                placeBonus();
 
                 //обновление счета
                 if(snakeGame.getMaxScoreLeft()>0) {
@@ -146,13 +146,26 @@ public class SnakeGame implements Runnable {
 
             GUI.f1.repaint();
 
-
-            try {
+            if (bonusFlag == false){
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            else{
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            /*try {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
 
                 e.printStackTrace();
-            }
+            }*/
 
         }
 
@@ -203,6 +216,11 @@ public class SnakeGame implements Runnable {
     public void collisionFood() {
         if(Math.abs(food.getFoodX()-snake.getSnakeX())<=8  &&  Math.abs(food.getFoodY()-snake.getSnakeY())<=8) {
             food.setFoodPlaced(false);
+            bonus.setBonusPlaced(false);
+            bonusFlag = false;
+            if (Math.round(Math.random()) < 0.5){
+                placeBonus();
+            }
 
             snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
 
@@ -223,6 +241,7 @@ public class SnakeGame implements Runnable {
     public void collisionBonus() {
         if(Math.abs(bonus.getBonusX()-snake.getSnakeX())<=8  &&  Math.abs(bonus.getBonusY()-snake.getSnakeY())<=8) {
             bonus.setBonusPlaced(false);
+            bonusFlag = true;
 
             snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
 
