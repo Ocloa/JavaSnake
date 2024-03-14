@@ -319,7 +319,7 @@ public class GUI {
 
     public void drawCurrentGame(Graphics2D g2) {
         // Отрисовка левой части игры
-        g2.setColor(Color.WHITE);
+        g2.setColor(Color.DARK_GRAY);
         g2.fillRect(0, 0, 400, 400);
         //Стены
         g2.setColor(Color.BLACK);
@@ -337,13 +337,13 @@ public class GUI {
 
 
         if(food.isFoodPlaced() == true) {
-            g2.setColor(Color.GREEN);
+            g2.setColor(Color.magenta);
             g2.fillRect(food.getFoodX(), food.getFoodY(), 10, 10);
         }
 
 
 
-        // Информация об игре
+        //Информация об игре
 
 
         g2.setColor(Color.BLACK);
@@ -373,7 +373,7 @@ public class GUI {
     }
 
     public void drawBlinkAnimation1(Graphics2D g2) {
-        g2.setColor(Color.WHITE);
+        g2.setColor(Color.DARK_GRAY);
         g2.fillRect(0, 0, 400, 400);
         g2.setColor(Color.BLACK);
         //Стены
@@ -391,7 +391,7 @@ public class GUI {
 
 
         if(food.isFoodPlaced() == true) {
-            g2.setColor(Color.GREEN);
+            g2.setColor(Color.magenta);
             g2.fillRect(food.getFoodX(), food.getFoodY(), 10, 10);
         }
     }
@@ -405,7 +405,7 @@ public class GUI {
         g2.fillRect(0, 350, 400, 10);
 
         // анимация мигания
-        g2.setColor(Color.WHITE);
+        g2.setColor(Color.DARK_GRAY);
         g2.fillRect(0, 0, 400, 400);
 
         //Стены
@@ -445,7 +445,7 @@ public class GUI {
         g2.fillRect(0, 0, 400, 400);
         g2.setColor(Color.WHITE);
         g2.setFont(fontHeader);
-        g2.drawString("Snake", 100, 100);
+        g2.drawString("SNAKE", 100, 100);
         g2.setFont(fontMenu);
         g2.drawString("Start game", 100, 200);
         g2.drawString("Difficulty:", 100, 250);
