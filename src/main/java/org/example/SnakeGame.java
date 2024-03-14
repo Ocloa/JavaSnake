@@ -16,8 +16,6 @@ public class SnakeGame implements Runnable {
     private boolean pause = false;
     private boolean restart = false;
     private boolean startMenu = true;
-    private int difficultyLevel=0;	//0=easy, 1=normal, 2=hard
-    private  int difficultyLevel_thread;
 
     private String menuSelection = "Start game";
 
@@ -30,18 +28,6 @@ public class SnakeGame implements Runnable {
         started = true;
         Thread t = new Thread(snakeGame);
         menuSelection = "Restart game";
-
-        switch(snakeGame.getDifficultyLevel()) {
-            case 0:
-                snakeGame.setDifficultyLevel_thread(300);
-                break;
-            case 1:
-                snakeGame.setDifficultyLevel_thread(200);
-                break;
-            case 2:
-                snakeGame.setDifficultyLevel_thread(100);
-                break;
-        }
 
         t.start();
     }
@@ -88,7 +74,7 @@ public class SnakeGame implements Runnable {
             finishedBlink2 = false;
         }
 
-        //display "game over" and score
+        // Гаме овер
         finishedBlink1 = false;
         finishedBlink2 = false;
         finished = true;
@@ -153,7 +139,7 @@ public class SnakeGame implements Runnable {
 
 
             try {
-                Thread.sleep(snakeGame.getDifficultyLevel_thread());
+                Thread.sleep(200);
             } catch (InterruptedException e) {
 
                 e.printStackTrace();
@@ -351,20 +337,5 @@ public class SnakeGame implements Runnable {
         this.startMenu = startmenu;
     }
 
-    public int getDifficultyLevel() {
-        return difficultyLevel;
-    }
-
-    public void setDifficultyLevel(int difficultyLevel) {
-        this.difficultyLevel = difficultyLevel;
-    }
-
-    public int getDifficultyLevel_thread() {
-        return difficultyLevel_thread;
-    }
-
-    public void setDifficultyLevel_thread(int difficultyLevel_thread) {
-        this.difficultyLevel_thread = difficultyLevel_thread;
-    }
 
 }

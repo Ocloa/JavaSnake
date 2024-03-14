@@ -1,0 +1,14 @@
+Index: src/main/java/org/example/GUI.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/org/example/GUI.java b/src/main/java/org/example/GUI.java
+new file mode 100644
+--- /dev/null	(date 1710133637122)
++++ b/src/main/java/org/example/GUI.java	(date 1710133637122)
+@@ -0,0 +1,4 @@
++package org.example;
++
++public class GUI {
++}
