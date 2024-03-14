@@ -20,6 +20,7 @@ public class GUI {
     private Snake snake;
     private SnakeGame snakeGame;
     private Food food;
+    private Bonus bonus;
     private Font fontMenu;
     private Font fontHeader;
 
@@ -331,7 +332,10 @@ public class GUI {
             g2.fillRect(food.getFoodX(), food.getFoodY(), 10, 10);
         }
 
-
+        if(bonus.isBonusPlaced() == true) {
+            g2.setColor(Color.green);
+            g2.fillRect(bonus.getBonusX(), bonus.getBonusY(), 10, 10);
+        }
 
 
 
@@ -383,6 +387,11 @@ public class GUI {
         if(food.isFoodPlaced() == true) {
             g2.setColor(Color.magenta);
             g2.fillRect(food.getFoodX(), food.getFoodY(), 10, 10);
+        }
+
+        if(bonus.isBonusPlaced() == true) {
+            g2.setColor(Color.green);
+            g2.fillRect(bonus.getBonusX(), bonus.getBonusY(), 10, 10);
         }
     }
 
@@ -466,6 +475,14 @@ public class GUI {
 
     public void setFood(Food food) {
         this.food = food;
+    }
+    public Bonus getBonus() {
+        return bonus;
+    }
+
+
+    public void setBonus(Bonus bonus) {
+        this.bonus = bonus;
     }
 
     public Snake getSnake() {

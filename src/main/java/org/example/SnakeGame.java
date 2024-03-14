@@ -9,6 +9,7 @@ public class SnakeGame implements Runnable {
     private boolean finishedBlink1 = false;
     private boolean finishedBlink2 = false;
     private boolean finished = false;
+    private boolean bonusFlag = false;
     private int score = 0;
     private int maxScoreLeft = 0;
     private int seconds = 0;
@@ -22,6 +23,7 @@ public class SnakeGame implements Runnable {
     private Snake snake;
     private SnakeGame snakeGame;
     private Food food;
+    private Bonus bonus;
 
 
     public void startGame(SnakeGame snakeGame) {
@@ -89,9 +91,13 @@ public class SnakeGame implements Runnable {
 
         snake = new Snake();
         food = new Food();
+        bonus = new Bonus();
         food.setFood(food);
+        bonus.setBonus(bonus);
         Main.gui.setFood(food);
         Main.gui.setSnake(snake);
+        Main.gui.setBonus(bonus);
+
 
 
         snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
@@ -115,6 +121,9 @@ public class SnakeGame implements Runnable {
                 //проверка столкновения с едой
                 collisionFood();
 
+                //проверка столкновения с бонусом
+                collisionBonus();
+
                 //проверка столкновения с собой
                 collisionSnake();
 
@@ -137,13 +146,26 @@ public class SnakeGame implements Runnable {
 
             GUI.f1.repaint();
 
-
-            try {
+            if (bonusFlag == false){
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            else{
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            /*try {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
 
                 e.printStackTrace();
-            }
+            }*/
 
         }
 
@@ -194,6 +216,11 @@ public class SnakeGame implements Runnable {
     public void collisionFood() {
         if(Math.abs(food.getFoodX()-snake.getSnakeX())<=8  &&  Math.abs(food.getFoodY()-snake.getSnakeY())<=8) {
             food.setFoodPlaced(false);
+            bonus.setBonusPlaced(false);
+            bonusFlag = false;
+            if (Math.round(Math.random()) < 0.5){
+                placeBonus();
+            }
 
             snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
 
@@ -207,6 +234,27 @@ public class SnakeGame implements Runnable {
             food.setFoodX((int) (35+Math.random()*335));
             food.setFoodY((int) (35+Math.random()*315));
             food.setFoodPlaced(true);
+            snakeGame.maxScoreLeft = 100;
+        }
+    }
+
+    public void collisionBonus() {
+        if(Math.abs(bonus.getBonusX()-snake.getSnakeX())<=8  &&  Math.abs(bonus.getBonusY()-snake.getSnakeY())<=8) {
+            bonus.setBonusPlaced(false);
+            bonusFlag = true;
+
+            snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
+
+            snakeGame.score += snakeGame.getMaxScoreLeft();
+        }
+    }
+
+
+    public void placeBonus() {
+        if(bonus.isBonusPlaced() == false) {
+            bonus.setBonusX((int) (35+Math.random()*335));
+            bonus.setBonusY((int) (35+Math.random()*315));
+            bonus.setBonusPlaced(true);
             snakeGame.maxScoreLeft = 100;
         }
     }
