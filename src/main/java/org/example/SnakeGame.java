@@ -22,6 +22,7 @@ public class SnakeGame implements Runnable {
     private Snake snake;
     private SnakeGame snakeGame;
     private Food food;
+    private Bonus bonus;
 
 
     public void startGame(SnakeGame snakeGame) {
@@ -89,9 +90,13 @@ public class SnakeGame implements Runnable {
 
         snake = new Snake();
         food = new Food();
+        bonus = new Bonus();
         food.setFood(food);
+        bonus.setBonus(bonus);
         Main.gui.setFood(food);
         Main.gui.setSnake(snake);
+        Main.gui.setBonus(bonus);
+
 
 
         snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
@@ -106,6 +111,7 @@ public class SnakeGame implements Runnable {
 
                 collisionWall();
                 placeFood();
+                placeBonus();
 
                 //обновление счета
                 if(snakeGame.getMaxScoreLeft()>0) {
@@ -114,6 +120,9 @@ public class SnakeGame implements Runnable {
 
                 //проверка столкновения с едой
                 collisionFood();
+
+                //проверка столкновения с бонусом
+                collisionBonus();
 
                 //проверка столкновения с собой
                 collisionSnake();
@@ -207,6 +216,26 @@ public class SnakeGame implements Runnable {
             food.setFoodX((int) (35+Math.random()*335));
             food.setFoodY((int) (35+Math.random()*315));
             food.setFoodPlaced(true);
+            snakeGame.maxScoreLeft = 100;
+        }
+    }
+
+    public void collisionBonus() {
+        if(Math.abs(bonus.getBonusX()-snake.getSnakeX())<=8  &&  Math.abs(bonus.getBonusY()-snake.getSnakeY())<=8) {
+            bonus.setBonusPlaced(false);
+
+            snake.getList().add(new Rectangle(snake.getSnakeX(), snake.getSnakeY(), 10, 10));
+
+            snakeGame.score += snakeGame.getMaxScoreLeft();
+        }
+    }
+
+
+    public void placeBonus() {
+        if(bonus.isBonusPlaced() == false) {
+            bonus.setBonusX((int) (35+Math.random()*335));
+            bonus.setBonusY((int) (35+Math.random()*315));
+            bonus.setBonusPlaced(true);
             snakeGame.maxScoreLeft = 100;
         }
     }
